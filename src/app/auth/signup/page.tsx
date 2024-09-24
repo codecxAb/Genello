@@ -1,11 +1,10 @@
-// app/auth/signin/page.tsx
+// app/auth/signup/page.tsx
 "use client";
 
-import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function SignInPage() {
+export default function SignUpPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -13,16 +12,21 @@ export default function SignInPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
+
+    const res = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
     });
 
-    if (res?.error) {
-      setError("Invalid email or password");
+    const data = await res.json();
+
+    if (res.ok) {
+      router.push("/auth/signin");
     } else {
-      router.push("/"); // Redirect on successful sign-in
+      setError(data.message);
     }
   };
 
@@ -36,7 +40,7 @@ export default function SignInPage() {
         />
       </div>
       <div>
-        <h1 className="text-7xl text-white font-bold mb-5">Sign In</h1>
+        <h1 className="text-7xl text-white font-bold mb-5">Sign Up</h1>
         <form onSubmit={handleSubmit}>
           <div className="text-white flex flex-col gap-2">
             <label className="mr-5">Email</label>
@@ -56,20 +60,19 @@ export default function SignInPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
-
             <button
               className="py-2 mt-4 text-xl font-semibold rounded bg-green-500 hover:bg-green-600"
               type="submit"
             >
-              Sign In
+              Sign Up
             </button>
             <p className="text-gray-400 font-thin text-center mt-1">
-              don't have an account ? ?{" "}
+              Already have an account ?{" "}
               <a
                 className="text-white font-medium hover:underline"
-                href="/auth/signup"
+                href="/auth/signin"
               >
-                sign Up
+                sign In
               </a>
             </p>
           </div>

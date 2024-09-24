@@ -1,25 +1,44 @@
+// app/api/auth/[...nextauth]/route.ts
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { compare } from 'bcryptjs';
+import clientPromise from '@/lib/mongodb';
 
 export const authOptions = {
+  session: {
+    strategy: 'jwt',
+  },
   providers: [
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
         email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' }
+        password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        // Replace this with your actual authentication logic (e.g., a database check)
-        if (credentials?.email === 'test@example.com' && credentials?.password === 'password123') {
-          return { id: '1', email: credentials.email };
+        const client = await clientPromise;
+        const db = client.db();
+
+        // Find user by email
+        const user = await db.collection('users').findOne({ email: credentials?.email });
+
+        if (!user) {
+          throw new Error('No user found with the provided email');
         }
-        return null; // Return null if authentication fails
+
+        // Check if the password is correct
+        const isValid = await compare(credentials!.password, user.password);
+
+        if (!isValid) {
+          throw new Error('Password is incorrect');
+        }
+
+        return { id: user._id, email: user.email };
       },
     }),
   ],
   pages: {
-    signIn: '/auth/signin', // Optional: specify a custom sign-in page
+    signIn: '/auth/signin',
   },
   callbacks: {
     async session({ session, token }) {
