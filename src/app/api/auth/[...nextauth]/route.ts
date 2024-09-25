@@ -3,6 +3,7 @@ import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { compare } from 'bcryptjs';
 import clientPromise from '@/lib/mongodb';
+import { NextApiHandler } from 'next';
 
 export const authOptions = {
   session: {
@@ -41,13 +42,13 @@ export const authOptions = {
     signIn: '/auth/signin',
   },
   callbacks: {
-    async session({ session, token }) {
+    async session({ session, token }: { session: any; token: any }) {
       session.user.id = token.sub;
       return session;
     },
   },
 };
 
-const handler = NextAuth(authOptions);
+const handler: NextApiHandler = (req, res) => NextAuth(req, res, authOptions);
 
 export { handler as GET, handler as POST };
