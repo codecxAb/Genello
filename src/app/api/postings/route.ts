@@ -11,6 +11,7 @@ export async function GET() {
         createdAt: 'desc',
       },
     });
+    console.log("Database posts fetched");
 
     return NextResponse.json(posts);
   } catch (error) {

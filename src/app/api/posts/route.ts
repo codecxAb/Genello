@@ -31,6 +31,7 @@ export async function POST(request: Request) {
         content,
       },
     });
+    console.log("Database post created");
 
     // Return the created post
     return NextResponse.json(post, { status: 201 });
